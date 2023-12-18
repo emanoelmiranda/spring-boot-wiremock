@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration>
+<configuration>
+    <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
+    <import class="ch.qos.logback.core.ConsoleAppender"/>
+
+    <appender name="STDOUT" class="ConsoleAppender">
+        <encoder class="PatternLayoutEncoder">
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} -%kvp- %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+    <!-- turning down the wiremock logging -->
+    <logger name="com.github.tomakehurst.wiremock" level="warn"/>
+    <logger name="wiremock.org" level="error"/>
+    <logger name="wiremock" level="warn"/>
+    <!-- wiremock has per endpoint servlet logging -->
+    <logger name="/" level="warn"/>
+</configuration>

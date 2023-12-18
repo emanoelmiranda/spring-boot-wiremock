@@ -1,4 +1,4 @@
 # 4 space indentation
-[*.kotlin]
-indent_style = space
-indent_size = 2
+[*.kt]
+indent_style = tab
+indent_size = 4
