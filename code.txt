@@ -1,0 +1,100 @@
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+
+public class WireMockProxyExample {
+
+    public static void main(String[] args) {
+        configureFor("localhost", 8080);
+
+        stubFor(any(urlMatching("/other/service/.*"))
+                .atPriority(Integer.MAX_VALUE)
+                .willReturn(aResponse().proxiedFrom("http://otherhost.com/approot")
+                        .withAdditionalRequestHeader("Content-Type", "{{request.headers.Content-Type}}")
+                        .withAdditionalRequestHeader("Authorization", "{{request.headers.Authorization}}")
+                        .withQueryParams(".*")));
+
+        // Adicione outros stubs conforme necessário para outros cenários
+
+        // Inicie o servidor WireMock
+        startRecording("http://otherhost.com/approot");
+
+        // Seu código para interagir com o serviço
+
+        // Pare o servidor WireMock quando não for mais necessário
+        stopRecording();
+    }
+}
+
+
+/////////////////////////// WITH TRANSFORM
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+
+public class WireMockProxyExample {
+
+    public static void main(String[] args) {
+        configureFor("localhost", 8080);
+
+        stubFor(any(urlMatching("/other/service/.*"))
+                .atPriority(Integer.MAX_VALUE)
+                .willReturn(aResponse().proxiedFrom("http://otherhost.com/approot")
+                        .withTransformers("addHeaders")));
+
+        // Adicione outros stubs conforme necessário para outros cenários
+
+        // Inicie o servidor WireMock
+        startRecording("http://otherhost.com/approot");
+
+        // Seu código para interagir com o serviço
+
+        // Pare o servidor WireMock quando não for mais necessário
+        stopRecording();
+    }
+}
+
+import com.github.tomakehurst.wiremock.common.FileSource;
+import com.github.tomakehurst.wiremock.http.*;
+import com.github.tomakehurst.wiremock.stubbing.ServeEvent;
+
+import java.util.List;
+import java.util.Map;
+
+public class AddHeadersTransformer implements ResponseTransformer {
+
+    @Override
+    public Response transform(Request request, Response response, FileSource fileSource, Parameters parameters) {
+        HttpHeaders headers = request.getHeaders();
+        headers.all().forEach(headerEntry -> response.addHeader(headerEntry.key(), headerEntry.firstValue()));
+        return response;
+    }
+
+    @Override
+    public Response transform(Request request, Response response, FileSource fileSource) {
+        return transform(request, response, fileSource, Parameters.empty());
+    }
+
+    @Override
+    public boolean applyGlobally() {
+        return false;
+    }
+
+    @Override
+    public String getName() {
+        return this.getClass().getSimpleName();
+    }
+}
+
+public class WireMockProxyExample {
+
+    public static void main(String[] args) {
+        // Configuração do WireMock...
+
+        // Registrar o transformer
+        WireMockResponseTransformer transformer = new AddHeadersTransformer();
+        wireMockServer.addGlobalResponseTransformer(transformer);
+
+        // Inicie o servidor WireMock...
+
+        // Seu código para interagir com o serviço...
+
+        // Pare o servidor WireMock quando não for mais necessário...
+    }
+}
